@@ -5,27 +5,34 @@ Chương trình Benchmark toàn diện:
 3. Pure NumPy SIFT (Bản Python/NumPy thuần)
 """
 
+import sys
 import time
+from pathlib import Path
 import cv2
 import numpy as np
-import sift_c_wrapper
-import sift_numpy
+
+# Đảm bảo import được các module từ thư mục gốc algorithms
+ROOT_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT_DIR))
+
+from algorithms.features.sift import PureC_SIFT, sift_numpy_detect_and_compute
 
 def run_benchmark():
     print("=" * 75)
     print(" BENCHMARK: PURE C (NON-VECTORIZED) vs OPENCV vs PURE NUMPY")
     print("=" * 75)
 
-    img = cv2.imread('image.png', cv2.IMREAD_GRAYSCALE)
+    img_path = ROOT_DIR / "assets" / "images" / "image.png"
+    img = cv2.imread(str(img_path), cv2.IMREAD_GRAYSCALE)
     if img is None:
-        raise FileNotFoundError("Không tìm thấy file 'image.png'.")
+        raise FileNotFoundError(f"Không tìm thấy file ảnh tại: {img_path}")
 
     H, W = img.shape
     print(f"Ảnh đầu vào: {W} x {H} pixels (Grayscale)")
 
     # Khởi tạo các module
     sift_cv = cv2.SIFT_create()
-    sift_c = sift_c_wrapper.PureC_SIFT()
+    sift_c = PureC_SIFT()
 
     # -------------------------------------------------------------
     # 1. Warm-up & Đo thời gian thực thi (Execution Time)
@@ -51,7 +58,7 @@ def run_benchmark():
     # C. Pure NumPy
     # Chỉ chạy 1 lần vì NumPy thuần mất khoảng 5-7 giây
     t_start = time.perf_counter()
-    np_kps, np_descs = sift_numpy.detect_and_compute(img, use_exact_fma=True)
+    np_kps, np_descs = sift_numpy_detect_and_compute(img, use_exact_fma=True)
     np_time = time.perf_counter() - t_start
 
     print(f"  + OpenCV C++ (AVX2 + Multithread) : {cv_time * 1000:7.2f} ms ({1.0 / cv_time:5.1f} FPS)")

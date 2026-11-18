@@ -22,9 +22,21 @@ class CSiftKeypoint(ctypes.Structure):
 class PureC_SIFT:
     def __init__(self, dll_path: str = None):
         if dll_path is None:
-            dll_path = os.path.join(os.path.dirname(__file__), "libsift.dll")
-        if not os.path.exists(dll_path):
-            raise FileNotFoundError(f"Không tìm thấy thư viện DLL tại: {dll_path}")
+            candidates = [
+                os.path.join(os.path.dirname(__file__), "lib", "libsift.dll"),
+                os.path.join(os.path.dirname(__file__), "libsift.dll"),
+                os.path.join(os.path.dirname(__file__), "lib", "libsift.so"),
+                os.path.join(os.path.dirname(__file__), "libsift.so"),
+            ]
+            for p in candidates:
+                if os.path.exists(p):
+                    dll_path = p
+                    break
+        if dll_path is None or not os.path.exists(dll_path):
+            raise FileNotFoundError(
+                f"Không tìm thấy thư viện SIFT C (libsift.dll / libsift.so). "
+                f"Vui lòng chạy 'python scripts/build_c.py' để biên dịch mã nguồn C."
+            )
         
         self.lib = ctypes.CDLL(dll_path)
         

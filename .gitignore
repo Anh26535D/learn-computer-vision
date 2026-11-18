@@ -1,12 +1,15 @@
-*.png
+# Output images
+assets/outputs/
 
-# Python-generated files
+# Python cache & virtualenv
 __pycache__/
 *.py[oc]
 build/
 dist/
 wheels/
 *.egg-info
+.venv/
 
-# Virtual environments
-.venv
+# IDE / Editor files
+.vscode/
+.idea/
